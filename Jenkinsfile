@@ -29,5 +29,11 @@ pipeline {
                 sh "trivy fs --format table -o fs.html"
             }
         }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                     sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=BG -Dsonar.projectName=BG -Dsonar.java.binaries=target'''
+            }
     }
 }
