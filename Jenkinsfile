@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/jaiswaladi246/Multi'
+                git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/leroyjenkin/DevOps-MultiTierBankAppCI-pipeline.git'
             }
         }
 
@@ -18,15 +18,15 @@ pipeline {
             }
         }
 
-        stage('Hello') {
+        stage('Test') {
             steps {
-                echo 'Hello World'
+                sh "mvn test -DskipTests=true"
             }
         }
 
-        stage('Hello') {
+        stage('File System Scan') {
             steps {
-                echo 'Hello World'
+                sh "trivy fs --format table -o fs.html"
             }
         }
     }
