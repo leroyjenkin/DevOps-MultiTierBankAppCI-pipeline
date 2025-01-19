@@ -79,34 +79,50 @@ pipeline {
                         }
                 }
         }
-		stage('Update YAML Manifest in Other Repo') {
-		
-			steps {
-				sh '''
-					# Clone the repo withCredentials ([gitUsername Password (credentialsId: 'git-cred', gitToolName: 'Default')]) {
-		
-						git clone https://www.github.com/jaiswaladi246/Multi-Tier-BankApp-CD.git
-						cd Multi-Tier-BankApp-CD
-		
-						# List files to confirm the presence of bankapp-ds.yml
-						ls -l bankapp
-		
-						# Get the absolute path for the current directory
-						repo_dir=$(pwd)
-		
-						# Use the absolute path for sed
-						sed -i 's/image: adijaiswal\/bankapp:.* [image: adijaiswal\/bankapp: '$DOCKER_TAG'|'
-						${repo_dir}/bankapp/bankapp-ds.yml
-		
-					// Confirm the change
-					sh '''
-		
-						echo "Updated YAML file contents:"
-						cat Multi-Tier-BankApp-CD/bankapp/bankapp-ds.yml
-		
-					// Configure Git for committing changes and pushing
-                
+        stage('Update YAML Manifest in Other Repo') {
+                steps {
+                        script {
+                                withCredentials([gitUsernamePassword(credentialsId: 'git-cred', gitToolName: 'Default')]) {
+                                        sh '''
+                     			      	# Clone the repo
+                     	                        git clone https://www.github.com/jaiswaladi246/Multi-Tier-BankApp-CD.git
+                                   	        cd Multi-Tier-BankApp-CD
+
+                       	                        # List files to confirm the presence of bankapp-ds.yml
+                                                ls -l bankapp
+
+                                                # Get the absolute path for the current directory
+                                                repo_dir=$(pwd)
+
+                                                # Use the absolute path for sed
+                                                sed -i 's|image: adijaiswal/bankapp:.*|image: adijaiswal/bankapp:${DOCKER_TAG}|' ${repo_dir}/bankapp/bankapp-ds.yml
+                                	'''
+
+
+                        	        // Confirm the change
+                          	        sh '''
+                         	   	     echo "Updated YAML file contents:"
+				   	     cat Multi-Tier-BankApp-CD/bankapp/bankapp-ds.yml
+                          	        '''
+
+				        // Configure Git for committing changes and pushing
+        				sh '''
+        			             cd Multi-Tier-BankApp-CD   # Ensure you are inside the cloned repo
+        			             git config user.email "office@devopsshack.com"
+       			                     git config user.name "DevOps Shack"
+       				        '''
+
+        				// Commit and push the updated YAML file back to the other repository
+        				sh '''
+        			            cd Multi-Tier-BankApp-CD
+        			            ls
+        			            git add bankapp/bankapp-ds.yml
+        			            git commit -m "Update image tag to ${DOCKER_TAG}"
+        			            git push origin main
+        				'''
+				}
+                        }
                 }
-        }
-    }
 }
+
+
